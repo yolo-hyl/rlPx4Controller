@@ -1,0 +1,7 @@
+bu/
+build/
+**/__pycache__/**
+.vscode
+**/typings/**
+*.so
+*.egg-info
