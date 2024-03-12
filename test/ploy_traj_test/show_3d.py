@@ -1,4 +1,4 @@
-from px4Controller.traj_tools import PolyTrajGen
+from rlPx4Controller.traj_tools.polyTrajGen import PolyTrajGen
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation

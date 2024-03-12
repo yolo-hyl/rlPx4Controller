@@ -3,16 +3,16 @@ import time
 import numpy as np
 from scipy.spatial.transform import Rotation
 import math
-from pyControl import PosControl,AttiControl,RateControl,Mixer
+from rlPx4Controller.pyControl import PosControl,AttiControl,RateControl,Mixer
 import torch
 # udp
 import sys 
 sys.path.append("..") 
 from simple_sim.udp_comm import CmdSend,ObsRecv
 from simple_sim.record import Plotjuggler
-from px4Controller.traj_tools import Lemniscate
+from rlPx4Controller.traj_tools import Lemniscate
 
-from pyParallelControl import ParallelPosControl
+from rlPx4Controller.pyParallelControl import ParallelPosControl
 
 class Controller():
     def __init__(self) -> None:
@@ -59,6 +59,7 @@ if __name__ == "__main__":
             yaw_vector = exp_pos_2[0,:2] - exp_pos[0,:2]
             yaw = math.atan2(yaw_vector[1], yaw_vector[0])
             exp_pos = exp_pos[0] + np.array([0,0,2])
+            yaw = np.pi
 
         # pos ctrl
         # controller.pos_ctl.set_status(pos_world,velocity_world,angular_velocity_world,rot_quat,current_time-last_rate_control_time)
@@ -91,6 +92,10 @@ if __name__ == "__main__":
 
         actions_cpu = np.zeros((2,4))
         actions_cpu[0,:] = np.array([0,0,2,0])
+        # actions_cpu[0,:3] = exp_pos
+        actions_cpu[0,3] = yaw
+
+        
         print(actions_cpu)
 
         parallel_pos_control.set_status(root_pos_cpu,root_rot_cpu,root_vel_cpu,root_ang_vel_cpu,0.01)

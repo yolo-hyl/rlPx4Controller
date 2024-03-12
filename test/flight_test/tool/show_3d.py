@@ -2,7 +2,7 @@ import torch
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
-from px4Controller.traj_tools import Lemniscate
+from rlPx4Controller.traj_tools import Lemniscate
 import numpy as np
 
 # Create a figure and 3D axis

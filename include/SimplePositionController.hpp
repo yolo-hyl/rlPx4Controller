@@ -114,8 +114,12 @@ Eigen::VectorXd SimplePositionController::update(const Eigen::Vector3d &pos_sp, 
         des_acc = acc_sp + _Kv.asDiagonal() * (vel_sp - _vel_world) + _Kp.asDiagonal() * (pos_sp - _pos_world);
     }
 
+	for (int i = 0; i < 3; i++) {
+		des_acc(i) = MyMath::constrain(des_acc(i), double(-4.f),double(4.f));
+	}
     // des_acc += Eigen::Vector3d(0, 0, 0);
     // std::cout << "des_acc " <<des_acc<<std::endl;
+
 
     _thrust_sp = des_acc(2) * (_hover_thrust / CONSTANTS_ONE_G) + _hover_thrust;
 

@@ -1,3 +1,8 @@
+"""
+MyModule
+
+This module provides functionality related to ...
+"""
 import torch
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation

@@ -6,20 +6,21 @@ Usage
 Installation
 ------------
 
-To use Lumache, first install it using pip:
+To use rlPx4Controller , first install it using pip:
 
 .. code-block:: console
 
    # Install Eigen. The recommended version is 3.3.7
    sudo apt install libeigen3-dev
-   pip install pybind11
+   pip install pybind11 pybind11_stubgen
    # install rlPx4Controller
    pip install -e .
+   bash stubgen.sh
 
 
 
-Creating recipes
-----------------
+Single Quadcopter Test
+----------------------
 
 .. To retrieve a list of random ingredients,
 .. you can use the ``lumache.get_random_ingredients()`` function:
@@ -34,8 +35,9 @@ Creating recipes
 
 For example:
 
-.. code-block:: console
-   from pyControl import PosControl,AttiControl,RateControl,Mixer
+.. code-block:: python
+
+   from rlPx4Controller.pyControl import PosControl,AttiControl,RateControl,Mixer
 
    controller.pos_ctl.set_status(pos_world,velocity_world,angular_velocity_world,rot_quat,current_time-last_rate_control_time)
    atti_thrust_sp = controller.pos_ctl.update(exp_pos,np.array([0,0,0]),np.array([0,0,0]),float(yaw))
@@ -54,3 +56,18 @@ For example:
 .. >>> lumache.get_random_ingredients()
 .. ['shells', 'gorgonzola', 'parsley']
 
+Multi Quadcopter Test
+----------------------
+Since the python for loop is too slow, I chose to implement it in the `pyParallelControl` package.
+
+For example:
+
+
+.. code:: python
+
+   from rlPx4Controller.pyParallelControl import ParallelPosControl
+
+   parallel_rate_ctl = ParallelRateControl(envs_num)
+   while True:
+      parallel_rate_ctl.set_q_world(root_rot_cpu)
+      cmd = parallel_rate_ctl.update(rate_sp,rate,dt)

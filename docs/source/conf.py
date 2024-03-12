@@ -7,7 +7,7 @@ copyright = '2024, FP-Flight'
 author = 'FP-Flight'
 
 release = '0.1'
-version = '0.1.0'
+version = '0.2.0'
 
 # -- General configuration
 

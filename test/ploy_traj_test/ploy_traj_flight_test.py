@@ -3,14 +3,14 @@ import time
 import numpy as np
 from scipy.spatial.transform import Rotation
 import math
-from pyControl import PosControl,AttiControl,RateControl,Mixer
+from rlPx4Controller.pyControl import PosControl,AttiControl,RateControl,Mixer
 import torch
 # udp
 import sys 
 sys.path.append("..") 
 from simple_sim.udp_comm import CmdSend,ObsRecv
 from simple_sim.record import Plotjuggler
-from px4Controller.traj_tools import PolyTrajGen
+from rlPx4Controller.traj_tools.polyTrajGen import PolyTrajGen
 import csv
 class Controller():
     def __init__(self) -> None:

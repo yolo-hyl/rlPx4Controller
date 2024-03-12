@@ -10,7 +10,7 @@ import sys
 sys.path.append("..") 
 from simple_sim.udp_comm import CmdSend,ObsRecv
 from simple_sim.record import Plotjuggler
-from px4Controller.traj_tools import Lemniscate
+from rlPx4Controller.traj_tools import Lemniscate
 import csv
 class Controller():
     def __init__(self) -> None:

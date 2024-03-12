@@ -17,7 +17,7 @@ __version__ = "0.0.2"
 ext_modules = [
     # annotate this part if eigen version higher than 3.3.7
     Pybind11Extension(
-        "px4Controller.traj_tools.polyTrajGen",
+        "rlPx4Controller.traj_tools.polyTrajGen",
         ["bind/polyTrajGen.cpp","src/polynomial_traj.cpp"],
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
@@ -27,14 +27,14 @@ ext_modules = [
 
     
     Pybind11Extension(
-        "pyControl",
+        "rlPx4Controller.pyControl",
         ["bind/pyControl.cpp"],
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
         include_dirs=["include","/usr/include/eigen3"],
     ),
     Pybind11Extension(
-        "pyParallelControl",
+        "rlPx4Controller.pyParallelControl",
         ["bind/pyParallelControl.cpp"],
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
@@ -44,7 +44,7 @@ ext_modules = [
 ]
 
 setup(
-    name="px4Controller",
+    name="rlPx4Controller",
     version=__version__,
     author="Wang Hao",
     author_email="hwangwork@163.com",
@@ -53,7 +53,6 @@ setup(
     long_description="",
     packages=find_packages(),
     install_requires=[
-        # 列出项目的依赖项
         # 'torch',
     ],
     ext_modules=ext_modules,

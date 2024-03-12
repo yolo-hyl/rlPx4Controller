@@ -18,7 +18,7 @@ PYBIND11_MODULE(pyControl, m)
     )pbdoc";
 
     py::class_<Px4AttitudeController>(m, "AttiControl")
-        .def(py::init<>(), "四元数非线性姿态控制，输出为机体坐标系")
+        .def(py::init<>(), "Quaternion nonlinear attitude control, output in body coordinates")
         .def("set_pid_params", &Px4AttitudeController::set_pid_params, py::arg("p_gains").none())
         .def("update", py::overload_cast<const Eigen::Vector4d &, const Eigen::Vector4d &>(&Px4AttitudeController::update),
              py::arg("q_sp").none(), py::arg("q").none());
