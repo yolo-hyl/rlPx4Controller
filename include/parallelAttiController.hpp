@@ -65,17 +65,14 @@ void pyParallelAttiControl::set_status(Eigen::MatrixXd pos_matrix, Eigen::Matrix
 }
 Eigen::MatrixXd pyParallelAttiControl::update(const Eigen::MatrixXd &actions)
 {
-    assert(actions.rows() == _envs_num && actions.cols() == 4);
+    assert(actions.rows() == _envs_num && actions.cols() == 5);
 
     for (int i = 0; i < _envs_num; i++)
     {
-        Eigen::Vector3d action_vel = actions.block(i, 0, i + 1, 3).transpose();
-        double action_thrust = actions(i, 3);
+        double action_thrust = actions(i, 4);
+        Eigen::Vector4d q_sp = actions.block(i, 0, i+1, 4).transpose();
 
-        Eigen::Vector3d action_angle = actions.block(i, 0, i + 1, 3).transpose();
-        Eigen::Quaterniond q_sp = Eigen::AngleAxisd(action_angle(2), Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(action_angle(1), Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(action_angle(0), Eigen::Vector3d::UnitX());
-
-        Eigen::Vector3d rate_sp = _atti_control.at(i).update(Eigen::Vector4d(q_sp.w(),q_sp.x(),q_sp.y(),q_sp.z()), _drons_stats.at(i).quaternion);
+        Eigen::Vector3d rate_sp = _atti_control.at(i).update(q_sp, _drons_stats.at(i).quaternion);
         Eigen::Vector3d torque_sp = _rate_control.at(i).update(rate_sp, _drons_stats.at(i).angle_velocity, Eigen::Vector3d(0, 0, 0), _drons_stats.at(i).dt);
 
         // Eigen::Vector3d rate = observations.block(i,0,i+1,3).transpose();

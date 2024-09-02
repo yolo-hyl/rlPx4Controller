@@ -64,7 +64,7 @@ public:
         double acc_z = velDerivateZ_.update(_vel_world(2), dt);
         hoverThrustEkf->fuseAccZ(acc_z, thrust_z(2));
         // _hover_thrust =  hoverThrustEkf->getHoverThrust();
-        _hover_thrust = 0.29233965277671814;
+        _hover_thrust = 0.1533; //0.29233965277671814;
 
     };
     Eigen::VectorXd update(const Eigen::Vector3d &pos_sp, const Eigen::Vector3d &vel_sp, const Eigen::Vector3d &acc_sp, const double yaw_sp);
@@ -131,7 +131,7 @@ Eigen::VectorXd SimplePositionController::update(const Eigen::Vector3d &pos_sp, 
     pitch = (des_acc(0) * cos + des_acc(1) * sin) / CONSTANTS_ONE_G;
 
     q_sp = Eigen::AngleAxisd(yaw_sp, Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
-
+    
     Eigen::VectorXd atti_thrust_sp(5);
     atti_thrust_sp(0) = q_sp.w();
     atti_thrust_sp(1) = q_sp.x();
