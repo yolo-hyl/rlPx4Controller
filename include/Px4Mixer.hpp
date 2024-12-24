@@ -117,11 +117,11 @@ Eigen::Vector4d Px4Mixer::update(const Eigen::Vector4d  &torque)
     for (unsigned i = 0; i < _rotor_count; i++) {
       // Implement simple model for static relationship between applied motor pwm and motor thrust
       // model: thrust = (1 - _thrust_factor) * PWM + _thrust_factor * PWM^2
-      if (_thrust_factor > 0.0f) {
-        _rotor_outputs[i] = -(1.0f - _thrust_factor) / (2.0f * _thrust_factor) + sqrtf((1.0f - _thrust_factor) *
-            (1.0f - _thrust_factor) / (4.0f * _thrust_factor * _thrust_factor) + (_rotor_outputs[i] < 0.0f ? 0.0f : _rotor_outputs[i] /
-                _thrust_factor));
-        }
+    //   if (_thrust_factor > 0.0f) {
+    //     _rotor_outputs[i] = -(1.0f - _thrust_factor) / (2.0f * _thrust_factor) + sqrtf((1.0f - _thrust_factor) *
+    //         (1.0f - _thrust_factor) / (4.0f * _thrust_factor * _thrust_factor) + (_rotor_outputs[i] < 0.0f ? 0.0f : _rotor_outputs[i] /
+    //             _thrust_factor));
+    //     }
       }
 
 
