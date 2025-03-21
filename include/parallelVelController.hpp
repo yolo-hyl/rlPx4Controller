@@ -83,7 +83,6 @@ Eigen::MatrixXd pyParallelVelocityControl::update(const Eigen::MatrixXd &actions
         Eigen::Vector3d rate_sp = _atti_control.at(i).update(atti_thrust_sp.head<4>(), _drons_stats.at(i).quaternion);
         // Temp Modify： use_yaw_rate replace yaw
         double action_yaw_rate = action_yaw;
-        rate_sp(2) = action_yaw_rate;
         
         Eigen::Vector3d torque_sp = _rate_control.at(i).update(rate_sp, _drons_stats.at(i).angle_velocity, Eigen::Vector3d(0, 0, 0), _drons_stats.at(i).dt);
 
