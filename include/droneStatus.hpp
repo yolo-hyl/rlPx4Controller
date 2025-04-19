@@ -12,7 +12,6 @@ struct DroneStatus_t
 
     DroneStatus_t() : position(Eigen::Vector3d::Zero()), velocity(Eigen::Vector3d::Zero())
     ,quaternion(Eigen::Vector4d::Zero()), angle_velocity(Eigen::Vector3d::Zero()) {
-        // 其他构造逻辑...
     }
 };
 #endif

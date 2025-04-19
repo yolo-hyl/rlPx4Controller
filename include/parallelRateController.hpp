@@ -49,8 +49,7 @@ Eigen::MatrixXd pyParallelRateControl::update(const Eigen::MatrixXd &actions, co
 
         Eigen::Vector4d cmd = _mixers.at(i).update(torque_thrust_sp);
 
-        // Eigen::Vector 是4*1的向量不是 1*4;
-        _commands.block(i, 0, i + 1, 4) << cmd(0), cmd(1), cmd(2), cmd(3); // 啊? 为什么不能 transpose
+        _commands.block(i, 0, i + 1, 4) << cmd(0), cmd(1), cmd(2), cmd(3);
         // _commands.block(i,0,i,4) = _mixers.at(i).update(Eigen::Vector4d(torque_sp(0),torque_sp(1),torque_sp(2),actions(i,3)));
         //     // std::cout<< commands  << std::endl;
     }

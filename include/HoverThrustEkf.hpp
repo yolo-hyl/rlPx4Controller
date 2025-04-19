@@ -1,15 +1,9 @@
 #include "MyMath.hpp"
 #include <cmath>
 #include <iostream>
-static constexpr float CONSTANTS_ONE_G = 9.80665f;						// m/s^2
-
-// doc
-//  噪声 
-
-
-
+static constexpr float CONSTANTS_ONE_G = 9.80665f;// m/s^2
 /**
- * @brief 悬停油门估计
+ * @brief Hover throttle estimation
  *
  * 
  */
@@ -26,8 +20,8 @@ private:
     float _dt{0.02f};
     float _acc_var{5.f}; ///< Acceleration variance (m^2/s^3)
 	float _acc_var_scale{1.f}; ///< Multiplicator of the measurement variance, used to decrease sensivity 
-    // 似乎是降低速度快慢的影响
-	float _gate_size{3.f};
+	float _gate_size{3.f};   
+
 
 
 	float _hover_thr{0.5f};
@@ -62,15 +56,14 @@ private:
 
 
 public:
-    /**
-     * @brief 初始化参数
-     * 默认取消了Gate的使用，少定义了一些变量，可使用enableGate(打开)
-     * @param init_hover_thrust 初始悬停油门估计
-     * @param hover_thrust_noise 过程噪声|油门噪声 HTE_HT_ERR_INIT
-     * @param process_noise 观测噪声|加速度噪声 HTE_HT_NOISE
-     * 
-     * @return 两个整数的和
-     */
+	/**
+	 * @brief Initialize parameters
+	 * By default, the use of the gate is disabled. Some variables are less defined and can be enabled using enableGate().
+	 * @param init_hover_thrust Initial hover thrust estimate
+	 * @param hover_thrust_noise Process noise | Thrust noise HTE_HT_ERR_INIT
+	 * @param process_noise Observation noise | Acceleration noise HTE_HT_NOISE
+	 * 
+	 */
     HoverThrustEkf(double init_hover_thrust,double hover_thrust_noise,double process_noise);
     ~HoverThrustEkf();
     void predict(float dt);
@@ -84,8 +77,7 @@ public:
 
 HoverThrustEkf::HoverThrustEkf(double init_hover_thrust,double hover_thrust_noise,double process_noise)
 {
-    // 更新频率与position callback频率相同
-
+	// Update frequency is the same as the position callback frequency
     _hover_thr = init_hover_thrust;
     _hover_thr_max = 0.9;
     _hover_thr_min = 0.1;
@@ -119,12 +111,11 @@ double HoverThrustEkf::getHoverThrust(){
  * @param dt 
  */
 void HoverThrustEkf::predict(const float dt){
-	_state_var += _process_var * dt * dt; // 量纲统一
+	_state_var += _process_var * dt * dt; // Dimension consistency
 	_dt = dt;
 }
 
-// Update
-// 
+
 inline float HoverThrustEkf::computeH(const float thrust) const
 {
 	return -CONSTANTS_ONE_G * thrust / (_hover_thr * _hover_thr);
@@ -161,10 +152,10 @@ inline void HoverThrustEkf::updateStateCovariance(const float K, const float H)
 }
 
 /**
- * @brief update
- * 数据融合
- * @param acc_z z轴方向的加速度
- * @param thrust_z 和油门在z轴方向的分量
+ * @brief Update
+ * 
+ * @param acc_z Acceleration in the z-axis direction
+ * @param thrust_z Thrust component in the z-axis direction
  */
 void HoverThrustEkf::fuseAccZ(const float acc_z, const float thrust_z)
 {

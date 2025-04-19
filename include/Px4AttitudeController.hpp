@@ -17,8 +17,7 @@
  */
 Eigen::Quaterniond getAttiErr(const Eigen::Vector3d src, const Eigen::Vector3d dst, const double eps = double(1e-5))
 {
-	// 来自px4 注意Eigen::quaternion 有两种初始化方式，Eigen::quaternion(Eigen::Vector4d(x,y,z,w)) 和 Eigen::quaternion(w,x,y,z)
-	// TODO: 对比 setFromTwoVectors 的结果
+	// Note: Eigen::Quaternion has two initialization methods: Eigen::Quaternion(Eigen::Vector4d(x, y, z, w)) and Eigen::Quaternion(w, x, y, z)
 	Eigen::Vector4d q(0,0,0,0);
 	Eigen::Vector3d cr = src.cross(dst);
 	const float dt = src.dot(dst);
@@ -123,7 +122,7 @@ Eigen::Quaterniond eigen_canonical(Eigen::Quaterniond q)
 }
 Eigen::Vector3d Px4AttitudeController::update(const Eigen::Quaterniond &q,const Eigen::Quaterniond &attitude_setpoint_q)
 {
-	// 期望，反馈坐标系 均为 world
+	// The coordinate systems of the desired and feedback are both in the world frame
     Eigen::Quaterniond qd = attitude_setpoint_q;
     Eigen::Vector3d e_z = q.toRotationMatrix().col(2);
     Eigen::Vector3d e_z_d = qd.toRotationMatrix().col(2);
@@ -133,7 +132,6 @@ Eigen::Vector3d Px4AttitudeController::update(const Eigen::Quaterniond &q,const 
 	if (fabsf(qd_red.x()) > (1.f - 1e-5f) || fabsf(qd_red.y()) > (1.f - 1e-5f)) {
         // 当 四元数中的 x或y项非常接近1时， 当前推力朝向与目标推力朝向完全相反，此时Full attitude control 不会产生任何Yaw角输入
         // 而是直接采用Roll和Pitch的组合，从而获得正确的Yaw.忽略这种情况仍然是安全和稳定的。
-        // 不忽略的话会怎么样？ 总不能是少算一步少点误差吧
 		// In the infinitesimal corner case where the vehicle and thrust have the completely opposite direction,
 		// full attitude control anyways generates no yaw input and directly takes the combination of
 		// roll and pitch leading to the correct desired yaw. Ignoring this case would still be totally safe and stable.
@@ -180,6 +178,6 @@ Eigen::Vector3d Px4AttitudeController::update(const Eigen::Quaterniond &q,const 
 		rate_setpoint(i) = MyMath::constrain(rate_setpoint(i), -_rate_limit(i), _rate_limit(i));
 	}
 
-	return rate_setpoint; //frame(body)
+	return rate_setpoint; //(body frame)
 }
 #endif

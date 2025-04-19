@@ -81,8 +81,8 @@ Eigen::MatrixXd pyParallelAttiControl::update(const Eigen::MatrixXd &actions)
 
         Eigen::Vector4d cmd = _mixers.at(i).update(torque_thrust_sp);
 
-        // Eigen::Vector 是4*1的向量不是 1*4;
-        _commands.block(i,0,i+1,4) << cmd(0) , cmd(1), cmd(2), cmd(3);  // 啊? 为什么不能 transpose
+        
+        _commands.block(i,0,i+1,4) << cmd(0) , cmd(1), cmd(2), cmd(3); 
     }
 
     return _commands;

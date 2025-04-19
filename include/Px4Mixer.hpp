@@ -36,12 +36,12 @@ public:
 
     // float compute_desaturation_gain(const float *desaturation_vector, const float *outputs, float min_output, float max_output);
     // void minimize_saturation(
-    //     const float *desaturation_vector, // 需要消除饱和的轴上的值(pitch,roll,yall)，因此
+    //     const float *desaturation_vector, // Values on the axes (pitch, roll, yaw) that need desaturation
     //     float *outputs,
     //     float min_output,
     //     float max_output,
     //     bool reduce_only);
-    void minimize_saturation(Eigen::Vector4d desaturation_vector, // 需要消除饱和的轴上的值(pitch,roll,yall)，因此
+    void minimize_saturation(Eigen::Vector4d desaturation_vector,// Values on the axes (pitch, roll, yaw) that need desaturation
         Eigen::Vector4d& outputs,
         float min_output,
         float max_output,
@@ -133,18 +133,17 @@ float Px4Mixer::compute_desaturation_gain(Eigen::Vector4d desaturation_vector, E
 {
     float k_min = 0.f;
     float k_max = 0.f;
-    for (unsigned i = 0; i < _rotor_count; i++)//对每个motor计算
+    for (unsigned i = 0; i < _rotor_count; i++)
     {
         // Avoid division by zero. If desaturation_vector[i] is zero, there's nothing we can do to unsaturate anyway
         if (fabsf(desaturation_vector[i]) < FLT_EPSILON)
         {
             continue;
         }
-        if (outputs[i] < min_output) //当输出太小时
+        if (outputs[i] < min_output) 
         {
-            // 计算目标方向
             float k = (min_output - outputs[i]) / desaturation_vector[i];
-            if (k < k_min)//
+            if (k < k_min)
             {
                 k_min = k;
             }
@@ -171,7 +170,7 @@ float Px4Mixer::compute_desaturation_gain(Eigen::Vector4d desaturation_vector, E
 }
 
 void Px4Mixer::minimize_saturation(
-    Eigen::Vector4d desaturation_vector, // 需要消除饱和的轴上的值(pitch,roll,yall)，因此
+    Eigen::Vector4d desaturation_vector, 
     Eigen::Vector4d &outputs,
     float min_output,
     float max_output,
@@ -179,7 +178,7 @@ void Px4Mixer::minimize_saturation(
 {
     float k1 = compute_desaturation_gain(desaturation_vector, outputs, min_output, max_output);
 
-    // 在disable下 reduce_only=true,即k1若为负，才会缩小
+    // When disabled, reduce_only=true, meaning k1 will only reduce if it is negative.
     if (reduce_only && k1 > 0.f)
     {
         return;
