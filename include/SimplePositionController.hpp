@@ -3,7 +3,7 @@
 #include <Eigen/Eigen>
 #include "HoverThrustEkf.hpp"
 #include "Derivative.hpp"
-
+#include <Px4ContollerParams.hpp>
 enum control_mode
 {
     CTRL_ALL,
@@ -19,6 +19,9 @@ double fromQuaternion2yaw(Eigen::Quaterniond q)
 class SimplePositionController
 {
 private:
+    PositionControlParams _params;
+    HoverThrustEkf* hoverThrustEkf;
+
     HoverThrustEkf *hoverThrustEkf;
     Derivate velDerivateZ_;
 
@@ -35,9 +38,29 @@ private:
     Eigen::Vector3d _Kp, _Kv;
 
     control_mode _mode = control_mode::CTRL_ALL;
+    void applyVelocityConstraints(Eigen::Vector3d& vel_sp);
+    void applyAccelerationConstraints(Eigen::Vector3d& acc_sp);
 
 
 public:
+    SimplePositionController(const PositionControlParams& params = PositionControlParams{},
+        const HoverThrustEstimatorParams& hte_params = HoverThrustEstimatorParams{});
+
+    // 参数设置接口
+    void setParameters(const PositionControlParams& params);
+    void setPositionGains(const Eigen::Vector3d& p_gains);
+    void setVelocityGains(const Eigen::Vector3d& p_gains, const Eigen::Vector3d& i_gains, 
+    const Eigen::Vector3d& d_gains);
+    void setVelocityLimits(double max_horizontal, double max_up, double max_down);
+    void setThrustLimits(double min_thrust, double max_thrust);
+    void setHoverThrust(double hover_thrust);
+
+    // 获取当前参数
+    PositionControlParams getParameters() const { return _params; }
+
+    // 改进的update方法，包含约束处理
+    Eigen::VectorXd update(const Eigen::Vector3d& pos_sp, const Eigen::Vector3d& vel_sp, 
+    const Eigen::Vector3d& acc_sp, const double yaw_sp);
     void set_pid_params(Eigen::Vector3d pos_gains, Eigen::Vector3d vel_gains)
     {
         _Kp = pos_gains;
@@ -73,6 +96,28 @@ public:
     ~SimplePositionController();
 };
 
+// 构造函数实现
+SimplePositionController::SimplePositionController(const PositionControlParams& params,
+    const HoverThrustEstimatorParams& hte_params) 
+    : _params(params) {
+    setParameters(_params);
+
+    // 初始化悬停推力估计器
+    hoverThrustEkf = new HoverThrustEkf(hte_params.initial_hover_thrust,
+    hte_params.hover_thrust_noise,
+    hte_params.process_noise);
+    if (hte_params.enable_gate) {
+        hoverThrustEkf->enableGate(hte_params.gate_size);
+    }
+}
+
+void SimplePositionController::setParameters(const PositionControlParams& params) {
+    _params = params;
+    _Kp = _params.position_p_gain;
+    _Kv = _params.velocity_p_gain;
+    _hover_thrust = _params.hover_thrust;  // 移除硬编码
+}
+
 SimplePositionController::SimplePositionController(/* args */)
 {
     _Kp << 1.5, 1.5, 1.5;
@@ -88,57 +133,70 @@ void SimplePositionController::set_control_mode(control_mode mode)
 {
     _mode = mode;
 }
-Eigen::VectorXd SimplePositionController::update(const Eigen::Vector3d &pos_sp, const Eigen::Vector3d &vel_sp, const Eigen::Vector3d &acc_sp, const double yaw_sp)
-{
-    // std::cout << "pos_sp " <<pos_sp<<std::endl;
-    // std::cout << "vel_sp " <<vel_sp<<std::endl;
-    // std::cout << "acc_sp " <<acc_sp<<std::endl;
-    // std::cout << "yaw_sp " <<yaw_sp<<std::endl;
+// 改进的update方法
+Eigen::VectorXd SimplePositionController::update(const Eigen::Vector3d& pos_sp, 
+    const Eigen::Vector3d& vel_sp, 
+    const Eigen::Vector3d& acc_sp, 
+    const double yaw_sp) {
+    // 计算期望加速度
+    Eigen::Vector3d des_acc = acc_sp;
 
-    // compute disired acceleration
-    Eigen::Vector3d des_acc(0.0, 0.0, 0.0);
-    Eigen::Vector3d Kp, Kv;
-
-
-    if(_mode == CTRL_POS_ONLY)
-    {
-        des_acc = acc_sp + _Kp.asDiagonal() * (pos_sp - _pos_world);
-    }
-    else if(_mode == CTRL_VEL_ONLY)
-    {
-        des_acc = acc_sp + _Kv.asDiagonal() * (vel_sp - _vel_world);
-    // des_acc += Eigen::Vector3d(0,0,0);
-    }
-    else
-    {
-        des_acc = acc_sp + _Kv.asDiagonal() * (vel_sp - _vel_world) + _Kp.asDiagonal() * (pos_sp - _pos_world);
+    if (_mode == CTRL_POS_ONLY) {
+        des_acc += _Kp.cwiseProduct(pos_sp - _pos_world);
+    } else if (_mode == CTRL_VEL_ONLY) {
+        des_acc += _Kv.cwiseProduct(vel_sp - _vel_world);
+    } else {
+        des_acc += _Kv.cwiseProduct(vel_sp - _vel_world) + 
+    _   Kp.cwiseProduct(pos_sp - _pos_world);
     }
 
-	for (int i = 0; i < 3; i++) {
-		des_acc(i) = MyMath::constrain(des_acc(i), double(-4.f),double(4.f));
-	}
-    // des_acc += Eigen::Vector3d(0, 0, 0);
-    // std::cout << "des_acc " <<des_acc<<std::endl;
+    // 应用加速度约束
+    applyAccelerationConstraints(des_acc);
 
+    // 计算推力设定值，使用动态悬停推力
+    double current_hover_thrust = hoverThrustEkf->getHoverThrust();
+    _thrust_sp = des_acc(2) * (current_hover_thrust / CONSTANTS_ONE_G) + current_hover_thrust;
 
-    _thrust_sp = des_acc(2) * (_hover_thrust / CONSTANTS_ONE_G) + _hover_thrust;
+    // 约束推力在合理范围内
+    _thrust_sp = MyMath::constrain(_thrust_sp, _params.min_thrust, _params.max_thrust);
 
-    double roll, pitch, yaw, yaw_imu;
+    // 计算姿态设定值（考虑倾斜角限制）
     double yaw_odom = fromQuaternion2yaw(_q_world);
-    double sin = std::sin(yaw_odom);
-    double cos = std::cos(yaw_odom);
-    roll = (des_acc(0) * sin - des_acc(1) * cos) / CONSTANTS_ONE_G;
-    pitch = (des_acc(0) * cos + des_acc(1) * sin) / CONSTANTS_ONE_G;
+    double sin_yaw = std::sin(yaw_odom);
+    double cos_yaw = std::cos(yaw_odom);
 
-    q_sp = Eigen::AngleAxisd(yaw_sp, Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
-    
+    double roll = (des_acc(0) * sin_yaw - des_acc(1) * cos_yaw) / CONSTANTS_ONE_G;
+    double pitch = (des_acc(0) * cos_yaw + des_acc(1) * sin_yaw) / CONSTANTS_ONE_G;
+
+    // 限制倾斜角
+    double tilt_norm = std::sqrt(roll*roll + pitch*pitch);
+    if (tilt_norm > std::tan(_params.max_tilt_angle)) {
+        double scale = std::tan(_params.max_tilt_angle) / tilt_norm;
+        roll *= scale;
+        pitch *= scale;
+    }
+
+    q_sp = Eigen::AngleAxisd(yaw_sp, Eigen::Vector3d::UnitZ()) *
+    Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+    Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
+
+    // 返回结果
     Eigen::VectorXd atti_thrust_sp(5);
-    atti_thrust_sp(0) = q_sp.w();
-    atti_thrust_sp(1) = q_sp.x();
-    atti_thrust_sp(2) = q_sp.y();
-    atti_thrust_sp(3) = q_sp.z();
-    atti_thrust_sp(4) = _thrust_sp;
-
+    atti_thrust_sp << q_sp.w(), q_sp.x(), q_sp.y(), q_sp.z(), _thrust_sp;
     return atti_thrust_sp;
+}
+void SimplePositionController::applyAccelerationConstraints(Eigen::Vector3d& acc_sp) {
+    // 水平加速度约束
+    Eigen::Vector2d acc_horizontal(acc_sp(0), acc_sp(1));
+    if (acc_horizontal.norm() > _params.max_horizontal_acceleration) {
+        acc_horizontal = acc_horizontal.normalized() * _params.max_horizontal_acceleration;
+        acc_sp(0) = acc_horizontal(0);
+        acc_sp(1) = acc_horizontal(1);
+    }
+    
+    // 垂直加速度约束
+    acc_sp(2) = MyMath::constrain(acc_sp(2), 
+                                 -_params.max_vertical_acceleration, 
+                                 _params.max_vertical_acceleration);
 }
 #endif

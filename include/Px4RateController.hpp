@@ -3,6 +3,7 @@
 #include <Eigen/Eigen>
 // #include <pybind11/eigen.h>
 #include "MyMath.hpp"
+#include <Px4ContollerParams.hpp>
 /*
  * Note: order of axis are match tf2::LinearMath (bullet).
  * YPR rotation convention -> YAW first, Pitch second, Roll third
@@ -39,7 +40,7 @@ private:
 	 * gives the ENU frame.  Similarly, a +PI rotation about X (East) followed by
 	 * a +PI/2 roation about Z (Up) gives the NED frame.
 	 */
-
+	RateControlParams _params;
 	Eigen::Vector3d _gain_p; ///< rate control proportional gain for all axes x, y, z
 	Eigen::Vector3d _gain_i; ///< rate control integral gain
 	Eigen::Vector3d _gain_d; ///< rate control derivative gain
@@ -55,6 +56,18 @@ private:
 	Eigen::Vector3d _rate_now;
 
 public:
+	Px4RateController(const RateControlParams& params = RateControlParams{});
+    
+    // 参数设置接口
+    void setParameters(const RateControlParams& params);
+    void setPidGains(const Eigen::Vector3d& p_gain, const Eigen::Vector3d& i_gain, 
+                     const Eigen::Vector3d& d_gain);
+    void setGlobalGain(const Eigen::Vector3d& k_gain);
+    void setIntegralLimit(const Eigen::Vector3d& int_limit);
+    
+    // 获取当前参数
+    RateControlParams getParameters() const { return _params; }
+
 	Px4RateController(/* args */);
 	~Px4RateController();
 	Eigen::Vector3d update(const Eigen::Vector3d &rate_sp, const Eigen::Vector3d &rate, const Eigen::Vector3d &angular_accel,
@@ -79,6 +92,27 @@ public:
 	Eigen::Vector3d transform_world2body(Eigen::Quaterniond q, Eigen::Vector3d rate_world);
 	Eigen::Quaterniond q_world;
 };
+
+// 构造函数实现
+Px4RateController::Px4RateController(const RateControlParams& params) 
+    : _params(params) {
+    setParameters(_params);
+}
+
+void Px4RateController::setParameters(const RateControlParams& params) {
+    _params = params;
+    
+    // 应用全局增益
+    _gain_p = _params.rate_k.cwiseProduct(_params.proportional_gain);
+    _gain_i = _params.rate_k.cwiseProduct(_params.integral_gain);
+    _gain_d = _params.rate_k.cwiseProduct(_params.derivative_gain);
+    _lim_int = _params.integral_limit;
+    
+    // 设置低通滤波器截止频率
+    // _derivative_filter.setCutoffFreq(_params.derivative_cutoff_freq);
+    
+    _rate_int.setZero();
+}
 
 Px4RateController::Px4RateController()
 {

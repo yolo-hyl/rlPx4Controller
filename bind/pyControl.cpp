@@ -16,6 +16,38 @@ PYBIND11_MODULE(pyControl, m)
         Quadrotor Controller Utils
         -----------------------
     )pbdoc";
+    py::class_<AttitudeControlParams>(m, "AttitudeControlParams")
+        .def(py::init<>())
+        .def_readwrite("proportional_gain", &AttitudeControlParams::proportional_gain)
+        .def_readwrite("rate_limit", &AttitudeControlParams::rate_limit)
+        .def_readwrite("yaw_weight", &AttitudeControlParams::yaw_weight);
+
+    py::class_<RateControlParams>(m, "RateControlParams")
+        .def(py::init<>())
+        .def_readwrite("proportional_gain", &RateControlParams::proportional_gain)
+        .def_readwrite("integral_gain", &RateControlParams::integral_gain)
+        .def_readwrite("derivative_gain", &RateControlParams::derivative_gain);
+
+    py::class_<PositionControlParams>(m, "PositionControlParams")
+        .def(py::init<>())
+        .def_readwrite("position_p_gain", &PositionControlParams::position_p_gain)
+        .def_readwrite("velocity_p_gain", &PositionControlParams::velocity_p_gain)
+        .def_readwrite("hover_thrust", &PositionControlParams::hover_thrust);
+
+    py::class_<Px4ControllerParams>(m, "Px4ControllerParams")
+        .def(py::init<>())
+        .def_readwrite("attitude", &Px4ControllerParams::attitude)
+        .def_readwrite("rate", &Px4ControllerParams::rate)
+        .def_readwrite("position", &Px4ControllerParams::position)
+        .def_static("from_px4_params", &Px4ControllerParams::fromPx4Params);
+
+    // 更新控制器类，添加参数构造函数
+    py::class_<Px4AttitudeController>(m, "AttiControl")
+        .def(py::init<>())
+        .def(py::init<const AttitudeControlParams&>())
+        .def("set_parameters", &Px4AttitudeController::setParameters)
+        .def("get_parameters", &Px4AttitudeController::getParameters)
+        .def("update", py::overload_cast<const Eigen::Vector4d &, const Eigen::Vector4d &>(&Px4AttitudeController::update));
 
     py::class_<Px4AttitudeController>(m, "AttiControl")
         .def(py::init<>(), "Quaternion nonlinear attitude control, output in body coordinates")

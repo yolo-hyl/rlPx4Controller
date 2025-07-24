@@ -5,7 +5,7 @@
 #include "MyMath.hpp"
 #include <iostream>
 #include <cmath>
-
+#include <Px4ContollerParams.hpp>
 
 /**
  * Quaternion from two vectors
@@ -61,6 +61,7 @@ Eigen::Quaterniond getAttiErr(const Eigen::Vector3d src, const Eigen::Vector3d d
 }
 class Px4AttitudeController{
 private:
+	AttitudeControlParams _params;
     /* data */
     Eigen::Quaterniond _attitude_setpoint_q; ///< latest known attitude setpoint e.g. from position control
 	float _yaw_w{0.f}; ///< yaw weight [0,1] to deprioritize caompared to roll and pitch
@@ -74,6 +75,16 @@ private:
 
 
 public:
+	Px4AttitudeController(const AttitudeControlParams& params = AttitudeControlParams{});
+    
+    // 设置参数的接口
+    void setParameters(const AttitudeControlParams& params);
+    void setProportionalGain(const Eigen::Vector3d& p_gain);
+    void setRateLimit(const Eigen::Vector3d& rate_limit);
+    void setYawWeight(double yaw_weight);
+    
+    // 获取当前参数
+    AttitudeControlParams getParameters() const { return _params; }
     Px4AttitudeController(/* args */);
     ~Px4AttitudeController();
 	void set_pid_params(Eigen::Vector3d p_gain)
@@ -92,6 +103,24 @@ public:
 	Eigen::Vector3d get_atti_target(){return _atti_target;};
 	Eigen::Vector3d get_atti_now(){return _atti_now;};
 };
+
+Px4AttitudeController::Px4AttitudeController(const AttitudeControlParams& params) 
+    : _params(params) {
+    setParameters(_params);
+}
+
+void Px4AttitudeController::setParameters(const AttitudeControlParams& params) {
+    _params = params;
+    _proportional_gain = _params.proportional_gain;
+    _rate_limit = _params.rate_limit;
+    _yaw_w = _params.yaw_weight;
+    _yawspeed_setpoint = _params.yawspeed_setpoint;
+    
+    // 补偿yaw权重对输出的影响
+    if (_yaw_w > 1e-4f) {
+        _proportional_gain(2) /= _yaw_w;
+    }
+}
 
 Px4AttitudeController::Px4AttitudeController(/* args */)
 {

@@ -3,16 +3,16 @@ import time
 import numpy as np
 from scipy.spatial.transform import Rotation
 import math
-from pyControl import PosControl,AttiControl,RateControl,Mixer
+from rlPx4Controller.pyControl import PosControl,AttiControl,RateControl,Mixer
 import torch
 # udp
 import sys 
 sys.path.append("..") 
-from simple_sim.udp_comm import CmdSend,ObsRecv
-from simple_sim.record import Plotjuggler
-from tool.lemniscate import Lemniscate
+from ..simple_sim.udp_comm import CmdSend,ObsRecv
+from ..simple_sim.record import Plotjuggler
+from rlPx4Controller.traj_tools import Lemniscate
 
-from pyParallelControl import ParallelRateControl
+from rlPx4Controller.pyParallelControl import ParallelRateControl
 
 class Controller():
     def __init__(self) -> None:
