@@ -85,7 +85,6 @@ public:
     
     // 获取当前参数
     AttitudeControlParams getParameters() const { return _params; }
-    Px4AttitudeController(/* args */);
     ~Px4AttitudeController();
 	void set_pid_params(Eigen::Vector3d p_gain)
 	{
@@ -120,18 +119,6 @@ void Px4AttitudeController::setParameters(const AttitudeControlParams& params) {
     if (_yaw_w > 1e-4f) {
         _proportional_gain(2) /= _yaw_w;
     }
-}
-
-Px4AttitudeController::Px4AttitudeController(/* args */)
-{
-	_rate_limit << 1600/57.3,1600/57.3,1000/57.3;
-	set_pid_params(Eigen::Vector3d(8.0, 8.0, 1.0));
-	_yaw_w = 0.400;
-	// compensate for the effect of the yaw weight rescaling the output
-	if (_yaw_w > 1e-4f) {
-		_proportional_gain(2) /= _yaw_w;
-	}
-	_yawspeed_setpoint = 0;
 }
 
 Px4AttitudeController::~Px4AttitudeController()

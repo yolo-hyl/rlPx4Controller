@@ -89,7 +89,6 @@ public:
 
     };
     void set_control_mode(control_mode mode);
-    SimplePositionController(/* args */);
     ~SimplePositionController();
 };
 
@@ -113,13 +112,6 @@ void SimplePositionController::setParameters(const PositionControlParams& params
     _Kp = _params.position_p_gain;
     _Kv = _params.velocity_p_gain;
     _hover_thrust = _params.hover_thrust;  // 移除硬编码
-}
-
-SimplePositionController::SimplePositionController(/* args */)
-{
-    _Kp << 1.5, 1.5, 1.5;
-    _Kv << 1.5, 1.5, 1.5;
-    hoverThrustEkf = new HoverThrustEkf(0.4f, 0.1f, 0.0036f);
 }
 
 SimplePositionController::~SimplePositionController()

@@ -68,7 +68,6 @@ public:
     // 获取当前参数
     RateControlParams getParameters() const { return _params; }
 
-	Px4RateController(/* args */);
 	~Px4RateController();
 	Eigen::Vector3d update(const Eigen::Vector3d &rate_sp, const Eigen::Vector3d &rate, const Eigen::Vector3d &angular_accel,
 						   const float dt)
@@ -114,12 +113,6 @@ void Px4RateController::setParameters(const RateControlParams& params) {
     _rate_int.setZero();
 }
 
-Px4RateController::Px4RateController()
-{
-	set_pid_params(Eigen::Vector3d(0.5,0.5,0.2),
-				   Eigen::Vector3d(0.08,0.08,0.05),
-				   Eigen::Vector3d(0.001,0.001,0.0));
-}
 void Px4RateController::set_pid_params(Eigen::Vector3d gain_p, Eigen::Vector3d gain_i, Eigen::Vector3d gain_d)
 {
 	// x ,y ,z
