@@ -43,20 +43,19 @@ PYBIND11_MODULE(pyControl, m)
 
     // 更新控制器类，添加参数构造函数
     py::class_<Px4AttitudeController>(m, "AttiControl")
-        .def(py::init<>())
-        .def(py::init<const AttitudeControlParams&>())
-        .def("set_parameters", &Px4AttitudeController::setParameters)
-        .def("get_parameters", &Px4AttitudeController::getParameters)
-        .def("update", py::overload_cast<const Eigen::Vector4d &, const Eigen::Vector4d &>(&Px4AttitudeController::update));
-
-    py::class_<Px4AttitudeController>(m, "AttiControl")
         .def(py::init<>(), "Quaternion nonlinear attitude control, output in body coordinates")
+        .def(py::init<const AttitudeControlParams&>())  // 新增这行
+        .def("set_parameters", &Px4AttitudeController::setParameters)  // 新增这行
+        .def("get_parameters", &Px4AttitudeController::getParameters)  // 新增这行
         .def("set_pid_params", &Px4AttitudeController::set_pid_params, py::arg("p_gains").none())
         .def("update", py::overload_cast<const Eigen::Vector4d &, const Eigen::Vector4d &>(&Px4AttitudeController::update),
              py::arg("q_sp").none(), py::arg("q").none());
 
     py::class_<Px4RateController>(m, "RateControl")
         .def(py::init<>())
+        .def(py::init<const RateControlParams&>())  // 新增这行
+        .def("set_parameters", &Px4RateController::setParameters)  // 新增这行
+        .def("get_parameters", &Px4RateController::getParameters)  // 新增这行
         .def("set_q_world", &Px4RateController::set_q_world, py::arg("q_world").none())
         .def("set_pid_params", &Px4RateController::set_pid_params, py::arg("p_gains").none(), py::arg("i_gains").none(), py::arg("d_gains").none())
         .def("update", py::overload_cast<const Eigen::Vector3d &, const Eigen::Vector3d &, const Eigen::Vector3d &, const float>(&Px4RateController::update),
@@ -69,6 +68,9 @@ PYBIND11_MODULE(pyControl, m)
 
     py::class_<SimplePositionController>(m, "PosControl")
         .def(py::init<>())
+        .def(py::init<const PositionControlParams&, const HoverThrustEstimatorParams&>())  // 新增这行
+        .def("set_parameters", &SimplePositionController::setParameters)  // 新增这行
+        .def("get_parameters", &SimplePositionController::getParameters)  // 新增这行
         .def("get_hover_thrust", &SimplePositionController::get_hover_thrust)
         .def("set_pid_params", &SimplePositionController::set_pid_params, py::arg("pos_gains").none(), py::arg("vel_gains").none())
         .def("set_status", &SimplePositionController::set_status, py::arg("pos").none(), py::arg("vel").none(), py::arg("angular_velocity").none(), py::arg("q").none(), py::arg("dt").none())

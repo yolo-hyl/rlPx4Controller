@@ -21,8 +21,6 @@ class SimplePositionController
 private:
     PositionControlParams _params;
     HoverThrustEkf* hoverThrustEkf;
-
-    HoverThrustEkf *hoverThrustEkf;
     Derivate velDerivateZ_;
 
     Eigen::Vector3d _pos_world;
@@ -90,7 +88,6 @@ public:
         _hover_thrust = 0.1533; //0.29233965277671814;
 
     };
-    Eigen::VectorXd update(const Eigen::Vector3d &pos_sp, const Eigen::Vector3d &vel_sp, const Eigen::Vector3d &acc_sp, const double yaw_sp);
     void set_control_mode(control_mode mode);
     SimplePositionController(/* args */);
     ~SimplePositionController();
