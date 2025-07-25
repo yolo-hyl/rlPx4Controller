@@ -3,7 +3,7 @@
 #include <Eigen/Eigen>
 // #include <pybind11/eigen.h>
 #include "MyMath.hpp"
-#include <Px4ContollerParams.hpp>
+#include <Px4ControllerParams.hpp>
 /*
  * Note: order of axis are match tf2::LinearMath (bullet).
  * YPR rotation convention -> YAW first, Pitch second, Roll third

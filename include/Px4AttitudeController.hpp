@@ -5,7 +5,7 @@
 #include "MyMath.hpp"
 #include <iostream>
 #include <cmath>
-#include <Px4ContollerParams.hpp>
+#include <Px4ControllerParams.hpp>
 
 /**
  * Quaternion from two vectors

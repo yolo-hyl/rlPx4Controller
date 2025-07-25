@@ -3,7 +3,7 @@
 #include <Eigen/Eigen>
 #include "HoverThrustEkf.hpp"
 #include "Derivative.hpp"
-#include <Px4ContollerParams.hpp>
+#include <Px4ControllerParams.hpp>
 enum control_mode
 {
     CTRL_ALL,
@@ -146,8 +146,7 @@ Eigen::VectorXd SimplePositionController::update(const Eigen::Vector3d& pos_sp,
     } else if (_mode == CTRL_VEL_ONLY) {
         des_acc += _Kv.cwiseProduct(vel_sp - _vel_world);
     } else {
-        des_acc += _Kv.cwiseProduct(vel_sp - _vel_world) + 
-    _   Kp.cwiseProduct(pos_sp - _pos_world);
+        des_acc += _Kv.cwiseProduct(vel_sp - _vel_world) + _Kp.cwiseProduct(pos_sp - _pos_world);
     }
 
     // 应用加速度约束
