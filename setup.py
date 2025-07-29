@@ -45,7 +45,7 @@ ext_modules = [
     
     Pybind11Extension(
         "rlPx4Controller.pyControl",
-        ["bind/pyControl.cpp"],
+        ["bind/pyControl.cpp", "src/Px4ControllerParams.cpp"],
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
         include_dirs=["include", eigen_include],
