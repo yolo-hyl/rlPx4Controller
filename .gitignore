@@ -8,3 +8,5 @@ build/
 *.ninja
 CMakeFiles/*
 cmake_install.cmake
+*.pyi
+*.so
