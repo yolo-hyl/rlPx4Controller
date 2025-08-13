@@ -12,12 +12,12 @@ struct AttitudeControlParams {
 
 struct RateControlParams {
     // PX4官方默认参数
-    Eigen::Vector3d proportional_gain{0.15, 0.15, 0.2};
-    Eigen::Vector3d integral_gain{0.2, 0.2, 0.2}; 
-    Eigen::Vector3d derivative_gain{0.003, 0.003, 0.0};
-    Eigen::Vector3d integral_limit{0.3, 0.3, 0.3};
+    Eigen::Vector3d proportional_gain{0.19, 0.19, 0.12};
+    Eigen::Vector3d integral_gain{0.20, 0.20, 0.15}; 
+    Eigen::Vector3d derivative_gain{0.0055, 0.0055, 0.0};
+    Eigen::Vector3d integral_limit{0.15, 0.15, 0.15};
     Eigen::Vector3d rate_k{1.0, 1.0, 1.0};  // 全局增益
-    double derivative_cutoff_freq = 20.0;
+    double derivative_cutoff_freq = 35.0;
 };
 
 struct PositionControlParams {
